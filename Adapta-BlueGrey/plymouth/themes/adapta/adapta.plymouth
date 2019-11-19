@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=adapta
+Description=A floating adapta theme 
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/adapta
+ScriptFile=/usr/share/plymouth/themes/adapta/adapta.script

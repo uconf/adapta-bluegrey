@@ -1,0 +1,298 @@
+#  adapta.script - boot splash plugin
+# 
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2, or (at your option)
+#  any later version.
+# 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+# 
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+#  02111-1307, USA.
+# 
+#  Written by: Sergey "Brahim Salem-Tunisia (tel: 00216 97 95 72 72)"
+
+
+for (i=0; i<10; i++){
+  spec[i].image = Image("spec" + (i % 3) + ".png");
+  spec[i].sprite = Sprite(spec[i].image);
+  spec[i].sprite.SetOpacity (0.0);
+  }
+
+window_width = Window.GetWidth();
+window_height = Window.GetHeight();
+screen.center.X = Window.GetX() + window_width / 2;
+screen.center.Y = Window.GetY() + window_height / 2;
+
+logo.image = Image("logo.png");
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetX (window_width  / 2 - logo.image.GetWidth()  / 2);
+logo.sprite.SetY (window_height / 2 - logo.image.GetHeight() / 2);
+logo.sprite.SetOpacity (0.0);
+logo.sprite.SetZ (10000);
+
+logo_original_zoomout_image = ImageNew("shutdown.png");
+logo_zoomout_sprite = Sprite(logo_original_zoomout_image);
+logo_zoomout_sprite.SetX (window_width  / 2 - logo_zoomout_image.GetWidth()  / 2);
+logo_zoomout_sprite.SetY (window_height / 2 - logo_zoomout_image.GetHeight() / 2);
+logo_zoomout_sprite.SetOpacity (0.0);
+logo_zoomout_sprite.SetZ (10000);
+initial_logo_width = logo_original_zoomout_image.GetWidth();
+initial_logo_height = logo_original_zoomout_image.GetHeight();
+
+zoom_out_time = 75;           # Use smaller value if necessary to allow logo to completely 'zoom out' before Plymouth exits during shutdown.
+zoomtime = zoom_out_time;
+zoom = zoomtime;
+
+wallpaper_image = Image("background.png");
+screen_width = Window.GetWidth();
+screen_height = Window.GetHeight();
+resized_wallpaper_image = wallpaper_image.Scale(screen_width,screen_height);
+wallpaper_sprite = Sprite(resized_wallpaper_image);
+wallpaper_sprite.SetZ(-100);
+#if (Plymouth.GetMode () == "shutdown") zoomtime = zoom_out_time;
+#if (Plymouth.GetMode () == "shutdown") zoom = zoomtime;
+
+progress = 0.0;
+duration = 100;
+
+jiffies = 1;
+
+r = 0.78;
+g = 0.0;
+b = 0.0;
+
+fun refresh (){
+  inc = progress;
+  
+  if (Plymouth.GetMode () == "boot" || Plymouth.GetMode () == "resume") {
+  logo.sprite.SetOpacity (MathClamp((inc-0.6)/0.2, 0, 1));
+  
+  if (inc<0.75){
+    for (i=0; i<10; i++){
+      spec[i].sprite.SetX (window_width / 2 - spec[i].image.GetWidth() / 2 + Math.Sin(i*i+(inc*100+i*17)/10) * (0.75-inc)*window_width*0.3);
+      spec[i].sprite.SetY (window_height / 2 - spec[i].image.GetHeight() / 2 + Math.Cos(i*i+(inc*100+i*5)/7) * (0.75-inc)*window_height*0.3);
+      spec[i].sprite.SetZ (0);
+      spec[i].sprite.SetOpacity (inc/0.75);
+      }
+    }
+  else {
+    for (i=0; i<10; i++)
+      spec[i].sprite.SetOpacity (Math.Clamp((0.8-inc)/0.05, 0, 1));
+    }
+
+    #color cycle the background
+    if (jiffies >= (duration * 6)){
+    jiffies = 0;
+    r = 0.78;
+    g = 0.0;
+    b = 0.0;
+    }
+
+    jiffies++;
+
+#red
+    if (jiffies > 0 && jiffies <= duration){                      #rgb 0.78, 0.00, 0.00      200, 0, 0
+    r = Math.Clamp((r - 0.0 / duration), 0, 1);
+    g = Math.Clamp((g + 0.78 / duration), 0, 1);
+    }
+    
+#yellow
+    if (jiffies > duration && jiffies <= (duration * 2)){         #rgb 0.78, 0.78, 0.00      200, 200, 0
+    r = Math.Clamp((r - 0.78 / duration), 0, 1);
+    g = Math.Clamp((g - 0.23 / duration), 0, 1);
+    }
+    
+#green
+    if (jiffies > (duration * 2) && jiffies <= (duration * 3)){   #rgb 0.00, 0.55, 0.00      0, 140, 0
+    g = Math.Clamp((g + 0.16 / duration), 0, 1);
+    b = Math.Clamp((b + 0.70 / duration), 0, 1);
+    }
+    
+#cyan
+    if (jiffies > (duration * 3) && jiffies <= (duration * 4)){   #rgb 0.00, 0.71, 0.70      0, 180, 180
+    g = Math.Clamp((g - 0.71 / duration), 0, 1);
+    b = Math.Clamp((b + 0.30 / duration), 0, 1);
+    }
+    
+#blue
+    if (jiffies > (duration * 4) && jiffies <= (duration * 5)){   #rgb 0.00, 0.00, 1.00      0, 0, 255
+    b = Math.Clamp((b - 0.22 / duration), 0, 1);
+    r = Math.Clamp((r + 0.78 / duration), 0, 1);
+    }
+    
+#magenta
+    if (jiffies > (duration * 5) && jiffies <= (duration * 6)){   #rgb 0.78, 0.00, 0.78      200, 0, 200
+    b = Math.Clamp((b - 0.78 / duration), 0, 1);
+    r = Math.Clamp((r + 0.00 / duration), 0, 1);
+    }
+    
+       
+    rt = Math.Clamp((r - 100), 0, 1);
+    gt = Math.Clamp((g - 100), 0, 1);
+    bt = Math.Clamp((b - 100), 0, 1);
+    
+#    Window.SetBackgroundTopColor (rt, gt, bt);                  #gradient - darker at the top of screen
+    Window.SetBackgroundTopColor (r, g, b);                      #no gradient
+    Window.SetBackgroundBottomColor (r, g, b);
+    
+
+    }
+    else if (Plymouth.GetMode () == "shutdown" || Plymouth.GetMode () == "suspend") {
+       Window.SetBackgroundTopColor (0.85, 0.40, 0.18);                  #rgb 0.00, 0.11, 0.30      0, 28, 77       001c4d
+       Window.SetBackgroundBottomColor (0.85, 0.40, 0.18);
+       zoom -= 1;
+       a = zoom / zoomtime;
+       logo_zoomout_image = logo_original_zoomout_image.Scale(initial_logo_width * a, initial_logo_height * a);
+       logo_zoomout_sprite = SpriteNew();
+       logo_zoomout_sprite.SetImage(logo_zoomout_image);
+       logo_zoomout_sprite.SetPosition(Window.GetX() + (window_width - logo_zoomout_image.GetWidth()) / 2, Window.GetY() + (window_height - logo_zoomout_image.GetHeight()) / 2, 10000);
+       logo_zoomout_sprite.SetOpacity (a);
+    }
+  
+  }
+
+Plymouth.SetRefreshFunction (refresh);
+
+#----------------------------------------- Dialogue --------------------------------
+
+status = "normal";
+
+fun dialog_setup()
+  {
+    local.box;
+    local.lock;
+    local.entry;
+    
+    box.image = Image("box.png");
+    lock.image = Image("lock.png");
+    entry.image = Image("entry.png");
+    
+    box.sprite = Sprite(box.image);
+    box.x = Window.GetWidth()  / 2 - box.image.GetWidth ()/2;
+    box.y = Window.GetHeight() / 2 - box.image.GetHeight()/2;
+    box.z = 10000;
+    box.sprite.SetPosition(box.x, box.y, box.z);
+    
+    lock.sprite = Sprite(lock.image);
+    lock.x = box.x + box.image.GetWidth()/2 - (lock.image.GetWidth() + entry.image.GetWidth()) / 2;
+    lock.y = box.y + box.image.GetHeight()/2 - lock.image.GetHeight()/2;
+    lock.z = box.z + 1;
+    lock.sprite.SetPosition(lock.x, lock.y, lock.z);
+    
+    entry.sprite = Sprite(entry.image);
+    entry.x = lock.x + lock.image.GetWidth();
+    entry.y = box.y + box.image.GetHeight()/2 - entry.image.GetHeight()/2;
+    entry.z = box.z + 1;
+    entry.sprite.SetPosition(entry.x, entry.y, entry.z);
+    
+    global.dialog.box = box;
+    global.dialog.lock = lock;
+    global.dialog.entry = entry;
+    global.dialog.bullet_image = Image("bullet.png");
+    dialog_opacity (1);
+  }
+    
+fun dialog_opacity(opacity)
+  {
+    dialog.box.sprite.SetOpacity (opacity);
+    dialog.lock.sprite.SetOpacity (opacity);
+    dialog.entry.sprite.SetOpacity (opacity);
+    for (index = 0; dialog.bullet[index]; index++)
+      {
+        dialog.bullet[index].sprite.SetOpacity(opacity);
+      }
+  }
+
+fun display_normal_callback ()
+  {
+    global.status = "normal";
+    if (global.dialog)
+      dialog_opacity (0);
+  }
+
+fun display_password_callback (prompt, bullets)
+  {
+    global.status = "password";
+    if (!global.dialog)
+	dialog_setup();
+    else
+	dialog_opacity(1);
+    for (index = 0; dialog.bullet[index] || index < bullets; index++)
+      {
+        if (!dialog.bullet[index])
+          {
+            dialog.bullet[index].sprite = Sprite(dialog.bullet_image);
+            dialog.bullet[index].x = dialog.entry.x + index * dialog.bullet_image.GetWidth();
+            dialog.bullet[index].y = dialog.entry.y + dialog.entry.image.GetHeight() / 2 - dialog.bullet_image.GetHeight() / 2;
+            dialog.bullet[index].z = dialog.entry.z + 1;
+            dialog.bullet[index].sprite.SetPosition(dialog.bullet[index].x, dialog.bullet[index].y, dialog.bullet[index].z);
+          }
+        if (index < bullets)
+          dialog.bullet[index].sprite.SetOpacity(1);
+        else
+          dialog.bullet[index].sprite.SetOpacity(0);
+      }
+  }
+
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+
+#----------------------------------------- Progress Bar --------------------------------
+
+progress_box.image = Image("progress_box.png");
+progress_box.sprite = Sprite(progress_box.image);
+
+progress_box.x = Window.GetWidth()  / 2 -    progress_box.image.GetWidth()  / 2;
+progress_box.y = Window.GetHeight() * 0.75 - progress_box.image.GetHeight() / 2;
+progress_box.sprite.SetPosition(progress_box.x, progress_box.y, 0);
+
+progress_bar.zoomout_image = Image("progress_bar.png");
+progress_bar.sprite = Sprite();
+
+progress_bar.x = Window.GetWidth()  / 2 -        progress_bar.zoomout_image.GetWidth() / 2;
+progress_bar.y = Window.GetHeight() / 2 * 1.5  - progress_box.image.GetHeight() / 2 + (progress_box.image.GetHeight() - progress_bar.zoomout_image.GetHeight()) / 2;
+progress_bar.sprite.SetPosition(progress_bar.x, progress_bar.y, 1);
+
+fun progress_callback (duration, progress)
+  {
+    progress = (progress * 100) / 27.0;
+    global.progress = progress;
+    if (progress_bar.image.GetWidth () != Math.Int (progress_bar.zoomout_image.GetWidth () * progress))
+      {
+        progress_bar.image = progress_bar.zoomout_image.Scale(progress_bar.zoomout_image.GetWidth(progress_bar.zoomout_image) * progress, progress_bar.zoomout_image.GetHeight());
+        progress_bar.sprite.SetImage (progress_bar.image);
+      }
+  }
+
+Plymouth.SetBootProgressFunction(progress_callback);
+
+#----------------------------------------- Quit --------------------------------
+
+fun quit_callback ()
+{
+  logo.sprite.SetOpacity (1);
+  for (i=0; i<10; i++){
+     spec[i].sprite.SetOpacity (0.0);
+  }
+}
+
+Plymouth.SetQuitFunction(quit_callback);
+
+#----------------------------------------- Message --------------------------------
+
+message_sprite = Sprite();
+message_sprite.SetPosition(10, 10, 10000);
+
+fun message_callback (text)
+{
+  my_image = Image.Text(text, 1, 1, 1);
+  message_sprite.SetImage(my_image);
+}
+
+Plymouth.SetMessageFunction(message_callback);
